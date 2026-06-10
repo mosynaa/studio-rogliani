@@ -19,7 +19,7 @@
     .wrap{max-width:760px;margin:0 auto;padding:18px 14px 90px}
     .top{background:var(--card);border:1px solid #ddd;border-radius:16px;padding:18px 16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
     .logo-wrap{text-align:center;margin-bottom:12px}
-    .logo-wrap img{width:105px;max-width:44%;height:auto;display:inline-block;border:0}
+    .logo-wrap img{width:96px;max-width:40%;height:auto;display:inline-block;border:0}
     .brand{text-align:center;text-transform:uppercase;font-weight:800;font-size:20px;letter-spacing:.6px;margin-bottom:4px}
     .subtitle{text-align:center;font-size:13px;text-transform:uppercase;border-top:4px double #111;padding-top:5px;margin:0 8px;color:#111}
     .note{font-size:13px;color:var(--muted);margin:12px 0 0;text-align:center}
@@ -146,28 +146,27 @@
     doc.setDrawColor(0);
     doc.setTextColor(0);
 
-    // LOGO CENTRATO, PICCOLO E PROPORZIONATO
-    // Dimensioni reali rispettate: non viene stirato.
+    // Logo piccolo, centrato e proporzionato
     try {
-      doc.addImage(logoData, 'JPEG', 96.0, 7, 18, 18.75);
+      doc.addImage(logoData, 'JPEG', 98.0, 8, 14, 14.58);
     } catch(e) {}
 
-    // TESTI SOTTO AL LOGO
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(14);
-    doc.text('STUDIO MEDICO PROF. MARCO ROGLIANI',105,42,{align:'center'});
+    // Intestazione più sobria
+    doc.setFont('times','bold');
+    doc.setFontSize(13.5);
+    doc.text('STUDIO MEDICO PROF. MARCO ROGLIANI',105,37,{align:'center'});
 
-    doc.setLineWidth(.45);
-    doc.line(18,46,192,46);
-    doc.setLineWidth(.15);
-    doc.line(18,47.2,192,47.2);
+    doc.setLineWidth(.35);
+    doc.line(24,41,186,41);
+    doc.setLineWidth(.12);
+    doc.line(24,42.1,186,42.1);
 
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(8.8);
-    doc.text('CHIRURGIA PLASTICA RICOSTRUTTIVA - MEDICINA E CHIRURGIA ESTETICA',105,52,{align:'center'});
+    doc.setFont('times','normal');
+    doc.setFontSize(8.6);
+    doc.text('CHIRURGIA PLASTICA RICOSTRUTTIVA - MEDICINA E CHIRURGIA ESTETICA',105,47,{align:'center'});
   }
-  function footer(doc){doc.setFont('helvetica','normal'); doc.setFontSize(7.6); doc.text('prof. dott. Marco Rogliani M.D. Ph. D. - Universita degli studi di Roma “Tor Vergata” - cell +393473358676',105,286,{align:'center'});}
-  function section(doc,title,y){doc.setFillColor(210); doc.setDrawColor(0); doc.rect(15,y,180,8,'FD'); doc.setFont('helvetica','bold'); doc.setFontSize(11.2); doc.text(title,17,y+5.7); return y+8}
+  function footer(doc){doc.setFont('times','normal'); doc.setFontSize(7.2); doc.text('prof. dott. Marco Rogliani M.D. Ph. D. - Universita degli studi di Roma “Tor Vergata” - cell +393473358676',105,286,{align:'center'});}
+  function section(doc,title,y){doc.setFillColor(210); doc.setDrawColor(0); doc.rect(22,y,166,8,'FD'); doc.setFont('times','bold'); doc.setFontSize(10.6); doc.text(title,24,y+5.7); return y+8}
   function wrapFit(doc,text,w,maxLines,fontSize){
     text=clean(text); if(!text)return [];
     let fs=fontSize; let lines=[];
@@ -178,8 +177,8 @@
   function field(doc,label,value,x,y,w,h,opts={}){
     doc.setDrawColor(0); doc.setLineWidth(.15); doc.rect(x,y,w,h);
     doc.setFillColor(238); doc.rect(x,y,w,6,'F'); doc.setDrawColor(0); doc.rect(x,y,w,6);
-    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.text(label,x+2,y+4.1);
-    doc.setFont('helvetica','normal'); const lines=wrapFit(doc,value,w-4,Math.max(1,Math.floor((h-8)/4.1)),opts.fontSize||8.5);
+    doc.setFont('times','bold'); doc.setFontSize(6.8); doc.text(label,x+2,y+4.1);
+    doc.setFont('times','normal'); const lines=wrapFit(doc,value,w-4,Math.max(1,Math.floor((h-8)/4.1)),opts.fontSize||8.5);
     let ty=y+10; lines.forEach(line=>{doc.text(line,x+2,ty); ty+=4.1});
   }
   function bigLineField(doc,label,value,x,y,w,h){ field(doc,label,value,x,y,w,h,{fontSize:8.3}) }
@@ -187,28 +186,28 @@
   function generatePDF(){
     const { jsPDF } = window.jspdf; if(!jsPDF){alert('Libreria PDF non caricata. Controlla la connessione e riprova.');return}
     const d=getData(); const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    drawHeader(doc); let y=61; y=section(doc,'INFORMAZIONI GENERALI PAZIENTE',y);
-    field(doc,'Nome',d.nome,15,y,45,9); field(doc,'Cognome',d.cognome,60,y,55,9); field(doc,'Citta',d.citta,115,y,35,9); field(doc,'Via',d.via,150,y,45,9); y+=9;
-    field(doc,'Cellulare',d.cellulare,15,y,50,9); field(doc,'Professione',d.professione,65,y,70,9); field(doc,'Eta',d.eta,135,y,20,9); field(doc,'Peso',d.peso,155,y,20,9); field(doc,'Altezza',d.altezza,175,y,20,9); y+=9;
-    bigLineField(doc,'Come ci ha conosciuto?',d.come_conosciuto,15,y,180,13); y+=13;
-    bigLineField(doc,'Fuma?',d.fuma,15,y,45,13); bigLineField(doc,'Interventi precedenti?',d.interventi_precedenti,60,y,135,13); y+=13;
-    field(doc,'Figli?',d.figli,15,y,38,9); field(doc,'Eta figli',d.eta_figli,53,y,42,9); field(doc,'Taglia di reggiseno in allattamento',d.taglia_reggiseno,95,y,100,9); y+=9;
-    bigLineField(doc,'Allergie a farmaci?',d.allergie,15,y,180,13); y+=13;
-    bigLineField(doc,'Malattie?',d.malattie,15,y,180,13); y+=13;
-    bigLineField(doc,'Terapie farmacologiche?',d.terapie,15,y,180,15); y+=15;
-    bigLineField(doc,'Motivo della consultazione?',d.motivo,15,y,180,15); y+=15;
-    bigLineField(doc,'Due aggettivi che descrivano lo stato clinico attuale?',d.aggettivi,15,y,180,13); y+=15;
-    doc.setFillColor(210); doc.rect(15,y,180,8,'FD'); y+=8;
-    bigLineField(doc,'Consenso al trattamento dei dati personali ai sensi del D. Lgs n.196 del 2003','',15,y,180,9); y+=9;
-    field(doc,'Luogo',d.luogo,15,y,90,9); field(doc,'Data',dateIt(d.data),105,y,90,9); y+=10;
-    doc.rect(15,y,180,18); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text('Firma',18,y+6);
+    drawHeader(doc); let y=56; y=section(doc,'INFORMAZIONI GENERALI PAZIENTE',y);
+    field(doc,'Nome',d.nome,22,y,40,9); field(doc,'Cognome',d.cognome,62,y,50,9); field(doc,'Citta',d.citta,112,y,34,9); field(doc,'Via',d.via,146,y,42,9); y+=9;
+    field(doc,'Cellulare',d.cellulare,22,y,46,9); field(doc,'Professione',d.professione,68,y,62,9); field(doc,'Eta',d.eta,130,y,18,9); field(doc,'Peso',d.peso,148,y,20,9); field(doc,'Altezza',d.altezza,168,y,20,9); y+=9;
+    bigLineField(doc,'Come ci ha conosciuto?',d.come_conosciuto,22,y,166,13); y+=13;
+    bigLineField(doc,'Fuma?',d.fuma,22,y,40,13); bigLineField(doc,'Interventi precedenti?',d.interventi_precedenti,62,y,126,13); y+=13;
+    field(doc,'Figli?',d.figli,22,y,34,9); field(doc,'Eta figli',d.eta_figli,56,y,40,9); field(doc,'Taglia di reggiseno in allattamento',d.taglia_reggiseno,96,y,92,9); y+=9;
+    bigLineField(doc,'Allergie a farmaci?',d.allergie,22,y,166,13); y+=13;
+    bigLineField(doc,'Malattie?',d.malattie,22,y,166,13); y+=13;
+    bigLineField(doc,'Terapie farmacologiche?',d.terapie,22,y,166,15); y+=15;
+    bigLineField(doc,'Motivo della consultazione?',d.motivo,22,y,166,15); y+=15;
+    bigLineField(doc,'Due aggettivi che descrivano lo stato clinico attuale?',d.aggettivi,22,y,166,13); y+=15;
+    doc.setFillColor(210); doc.rect(22,y,166,8,'FD'); y+=8;
+    bigLineField(doc,'Consenso al trattamento dei dati personali ai sensi del D. Lgs n.196 del 2003','',22,y,166,9); y+=9;
+    field(doc,'Luogo',d.luogo,22,y,83,9); field(doc,'Data',dateIt(d.data),105,y,83,9); y+=10;
+    doc.rect(22,y,166,18); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.text('Firma',25,y+6);
     if(d.firma){try{doc.addImage(d.firma,'PNG',45,y+3,70,12)}catch(e){}}
     footer(doc);
 
-    doc.addPage(); drawHeader(doc); doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.text('SCHEDA CHIRURGICA',105,72,{align:'center'});
-    doc.setDrawColor(0); doc.setLineWidth(.2); doc.rect(20,88,170,158);
-    doc.setFillColor(238); doc.rect(20,88,170,9,'F'); doc.rect(20,88,170,9); doc.setFontSize(10); doc.text('Note / indicazioni chirurgiche',23,94);
-    doc.setFont('helvetica','normal'); const notes=wrapFit(doc,d.scheda_chirurgica,162,38,9); let ny=104; notes.forEach(line=>{doc.text(line,24,ny); ny+=4.4});
+    doc.addPage(); drawHeader(doc); doc.setFont('times','bold'); doc.setFontSize(18); doc.text('SCHEDA CHIRURGICA',105,72,{align:'center'});
+    doc.setDrawColor(0); doc.setLineWidth(.2); doc.rect(24,88,162,158);
+    doc.setFillColor(238); doc.rect(24,88,162,9,'F'); doc.rect(24,88,162,9); doc.setFont('times','bold'); doc.setFontSize(9.5); doc.text('Note / indicazioni chirurgiche',27,94);
+    doc.setFont('helvetica','normal'); doc.setFont('times','normal'); const notes=wrapFit(doc,d.scheda_chirurgica,154,38,8.8); let ny=104; notes.forEach(line=>{doc.text(line,28,ny); ny+=4.4});
     footer(doc);
 
     const name=(clean(d.cognome)||'paziente')+'_'+(clean(d.nome)||'');
