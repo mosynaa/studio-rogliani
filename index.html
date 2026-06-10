@@ -141,8 +141,41 @@ function start(e){e.preventDefault(); drawing=true; last=pos(e)} function move(e
 function clearCanvas(save=true){ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); if(save) signatureDataUrl=''} $('clearSig').onclick=()=>clearCanvas(true);
 function loadSignature(url){const img=new Image(); img.onload=()=>{clearCanvas(false); ctx.drawImage(img,0,0,canvas.width,canvas.height)}; img.src=url}
 function b64ToUint8Array(b64){const bin=atob(b64); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return bytes}
-function wrapText(text, maxChars){text=String(text||'').replace(/\s+/g,' ').trim(); if(!text) return []; const words=text.split(' '); const lines=[]; let line=''; words.forEach(w=>{if((line+' '+w).trim().length>maxChars){lines.push(line); line=w}else line=(line+' '+w).trim()}); if(line) lines.push(line); return lines}
-function drawLine(page, font, text, x, y, size=11, maxChars=45, lineGap=12, maxLines=3){const lines=wrapText(text,maxChars).slice(0,maxLines); lines.forEach((l,i)=>page.drawText(l,{x,y:y-i*lineGap,size,font,color:PDFLib.rgb(0,0,0)}))}
+function fitSize(font, text, maxWidth, startSize, minSize){
+  let s=startSize;
+  while(s>minSize && font.widthOfTextAtSize(String(text||''), s)>maxWidth) s-=0.35;
+  return Math.max(s,minSize);
+}
+function wrapByWidth(font, text, maxWidth, size){
+  text=String(text||'').replace(/\s+/g,' ').trim();
+  if(!text) return [];
+  const words=text.split(' '), lines=[]; let line='';
+  for(const word of words){
+    const test=(line+' '+word).trim();
+    if(font.widthOfTextAtSize(test,size)<=maxWidth){ line=test; continue; }
+    if(line) lines.push(line);
+    if(font.widthOfTextAtSize(word,size)<=maxWidth){ line=word; continue; }
+    let chunk='';
+    for(const ch of word){
+      if(font.widthOfTextAtSize(chunk+ch,size)>maxWidth){ lines.push(chunk); chunk=ch; }
+      else chunk+=ch;
+    }
+    line=chunk;
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+function drawLine(page, font, text, x, y, size=9.2, maxWidth=220, lineGap=10.5, maxLines=1, minSize=6.8){
+  text=String(text||'').trim();
+  if(!text) return;
+  let s=size;
+  let lines=wrapByWidth(font,text,maxWidth,s);
+  while(lines.length>maxLines && s>minSize){
+    s-=0.35;
+    lines=wrapByWidth(font,text,maxWidth,s);
+  }
+  lines.slice(0,maxLines).forEach((l,i)=>page.drawText(l,{x,y:y-i*lineGap,size:s,font,color:PDFLib.rgb(0,0,0)}));
+}
 async function generatePdf(){
   if(!window.PDFLib){show('Libreria PDF non caricata. Apri con connessione internet e riprova.'); return}
   const d=getData();
@@ -150,27 +183,27 @@ async function generatePdf(){
   const font=await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
   const pages=pdfDoc.getPages(); const p=pages[0]; const p2=pages[1];
   // Coordinate PDF A4: origine in basso a sinistra. Posizioni calibrate sul modello originale.
-  const size=11;
-  drawLine(p,font,d.nome,110,657,size,24,12,1); drawLine(p,font,d.cognome,318,657,size,24,12,1);
-  drawLine(p,font,d.citta,110,638,size,24,12,1); drawLine(p,font,d.via,305,638,size,35,12,1);
-  drawLine(p,font,d.cellulare,120,619,size,17,12,1); drawLine(p,font,d.professione,245,619,size,18,12,1); drawLine(p,font,d.eta,500,619,size,5,12,1);
-  drawLine(p,font,d.come_conosciuto,205,599,size,55,12,1);
-  drawLine(p,font,d.fuma,92,565,size,70,12,1);
-  drawLine(p,font,d.interventi_precedenti,175,547,size,70,12,2);
-  drawLine(p,font,d.peso,105,487,size,12,12,1); drawLine(p,font,d.altezza,478,487,size,12,12,1);
-  drawLine(p,font,d.figli,95,468,size,7,12,1); drawLine(p,font,d.eta_figli,180,468,size,9,12,1); drawLine(p,font,d.taglia_reggiseno_allattamento,416,468,size,20,12,1);
-  drawLine(p,font,d.allergie_farmaci,178,419,size,62,12,2);
-  drawLine(p,font,d.malattie,125,370,size,66,12,2);
-  drawLine(p,font,d.terapie_farmacologiche,230,321,size,60,12,3);
-  drawLine(p,font,d.motivo_consultazione,238,250,size,58,12,2);
-  drawLine(p,font,d.aggettivi_stato_clinico,330,230,size,45,12,1);
-  drawLine(p,font,d.luogo_data,155,121,size,35,12,1);
+  const size=9.2;
+  drawLine(p,font,d.nome,110,657,size,170,10.5,1); drawLine(p,font,d.cognome,318,657,size,225,10.5,1);
+  drawLine(p,font,d.citta,110,638,size,170,10.5,1); drawLine(p,font,d.via,305,638,size,240,10.5,1);
+  drawLine(p,font,d.cellulare,120,619,size,110,10.5,1); drawLine(p,font,d.professione,245,619,size,225,10.5,1); drawLine(p,font,d.eta,500,619,size,45,10.5,1);
+  drawLine(p,font,d.come_conosciuto,205,599,size,345,10.5,1);
+  drawLine(p,font,d.fuma,92,565,size,455,10.5,1);
+  drawLine(p,font,d.interventi_precedenti,175,547,size,375,10.5,2);
+  drawLine(p,font,d.peso,105,487,size,65,10.5,1); drawLine(p,font,d.altezza,478,487,size,70,10.5,1);
+  drawLine(p,font,d.figli,95,468,size,55,10.5,1); drawLine(p,font,d.eta_figli,180,468,size,70,10.5,1); drawLine(p,font,d.taglia_reggiseno_allattamento,416,468,size,130,10.5,1);
+  drawLine(p,font,d.allergie_farmaci,178,419,size,370,10.5,2);
+  drawLine(p,font,d.malattie,125,370,size,420,10.5,2);
+  drawLine(p,font,d.terapie_farmacologiche,230,321,size,315,10.5,3);
+  drawLine(p,font,d.motivo_consultazione,238,250,size,310,10.5,2);
+  drawLine(p,font,d.aggettivi_stato_clinico,330,230,size,215,10.5,1);
+  drawLine(p,font,d.luogo_data,155,121,size,235,10.5,1);
   if(d.usa_firma && d.signatureDataUrl){
     try{const png=await pdfDoc.embedPng(d.signatureDataUrl); p.drawImage(png,{x:190,y:44,width:190,height:55});}catch(e){console.warn(e)}
   }
   if(d.note_chirurgiche){
     p2.drawText('Note scheda chirurgica:',{x:70,y:635,size:13,font,color:PDFLib.rgb(0,0,0)});
-    const lines=wrapText(d.note_chirurgiche,82).slice(0,34); lines.forEach((l,i)=>p2.drawText(l,{x:70,y:610-i*15,size:11,font,color:PDFLib.rgb(0,0,0)}));
+    const lines=wrapByWidth(font,d.note_chirurgiche,455,10.2).slice(0,38); lines.forEach((l,i)=>p2.drawText(l,{x:70,y:610-i*13,size:10.2,font,color:PDFLib.rgb(0,0,0)}));
   }
   const bytes=await pdfDoc.save();
   const safeName=((d.cognome||'paziente')+'_'+(d.nome||'scheda')).replace(/[^a-z0-9_\-]+/gi,'_');
