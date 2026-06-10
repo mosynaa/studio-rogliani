@@ -150,7 +150,7 @@
       row.className='patient-item';
       row.innerHTML='<div><b>'+esc((d.cognome||'')+' '+(d.nome||''))+'</b><br><span>'+esc(item.date||'')+'</span></div><div><button type="button" class="secondary mini">Apri</button> <button type="button" class="danger mini">Elimina</button></div>';
       const btns=row.querySelectorAll('button');
-      btns[0].onclick=()=>{currentId=item.id; setData(d); scrollTo({top:0,behavior:'smooth'})};
+      btns[0].onclick=()=>{currentId=item.id; setData(d); scrollTo({top: 54,behavior:'smooth'})};
       btns[1].onclick=()=>{if(confirm('Eliminare questa bozza?')) write(all().filter(x=>x.id!==item.id))};
       box.appendChild(row)
     })
@@ -193,21 +193,24 @@
     doc.setDrawColor(0);
     doc.setTextColor(0);
 
-    // Logo sopra, centrato e proporzionato
-    try { doc.addImage(logoData, 'JPEG', 96.0, 6, 18, 18.75); } catch(e) {}
+    // LOGO SOPRA, CENTRATO.
+    // Pagina A4 larga 210 mm: x = (210 - 22) / 2 = 94.0
+    try {
+      doc.addImage(logoData, 'JPEG', 94.0, 6, 22, 22.92);
+    } catch(e) {}
 
     doc.setFont('helvetica','bold');
     doc.setFontSize(13.8);
-    doc.text('STUDIO MEDICO PROF. MARCO ROGLIANI',105,31,{align:'center'});
+    doc.text('STUDIO MEDICO PROF. MARCO ROGLIANI',105,35,{align:'center'});
 
     doc.setLineWidth(.42);
-    doc.line(24,35,186,35);
+    doc.line(24,39,186,39);
     doc.setLineWidth(.14);
-    doc.line(24,36.1,186,36.1);
+    doc.line(24,40.1,186,40.1);
 
     doc.setFont('helvetica','normal');
     doc.setFontSize(8.7);
-    doc.text('CHIRURGIA PLASTICA RICOSTRUTTIVA - MEDICINA E CHIRURGIA ESTETICA',105,41,{align:'center'});
+    doc.text('CHIRURGIA PLASTICA RICOSTRUTTIVA - MEDICINA E CHIRURGIA ESTETICA',105,45,{align:'center'});
   }
 
   function footer(doc){
